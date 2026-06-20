@@ -18,7 +18,7 @@ class HealthCheckHandler(BaseHTTPRequestHandler):
         self.wfile.write(b"Bot is running 24/7 on Render!")
 
     def log_message(self, format, *args):
-        return  # Отключаем лишний спам в консоли
+        return  # Отключаем лишний спам в консоли Render
 
 def run_web_server():
     # Render автоматически передает нужный порт в переменную PORT
@@ -50,7 +50,7 @@ def get_available_fonts():
     return [f for f in os.listdir(FONTS_DIR) if f.endswith('.ttf')]
 
 def create_text_image(text: str, font_name: str) -> io.BytesIO:
-    """Генерирует PNG картинку из текста с выбранным шрифтом"""
+    """Генерация PNG картинки с правильным расчетом размеров текста"""
     font_path = os.path.join(FONTS_DIR, font_name) if font_name else None
     try:
         if font_path and os.path.exists(font_path):
@@ -64,10 +64,10 @@ def create_text_image(text: str, font_name: str) -> io.BytesIO:
     dummy_img = Image.new("RGB", (1, 1))
     draw = ImageDraw.Draw(dummy_img)
     
-    # Расчет границ текста (корректная обработка кортежа bbox)
+    # multiline_textbbox возвращает кортеж координат (x0, y0, x1, y1)
     bbox = draw.multiline_textbbox((0, 0), text, font=font, spacing=10)
-    text_width = bbox[2] - bbox[0]
-    text_height = bbox[3] - bbox[1]
+    text_width = bbox[2] - bbox[0]   # ширина = x1 - x0
+    text_height = bbox[3] - bbox[1]  # высота = y1 - y0
 
     padding = 40
     img_width = max(text_width + (padding * 2), 150)
@@ -78,7 +78,6 @@ def create_text_image(text: str, font_name: str) -> io.BytesIO:
     draw = ImageDraw.Draw(image)
     draw.multiline_text((padding, padding), text, font=font, fill=(255, 255, 255), spacing=10)
 
-    # Сохраняем в байтовую строку без записи на жесткий диск
     image_buffer = io.BytesIO()
     image.save(image_buffer, format="PNG")
     image_buffer.seek(0)
@@ -175,4 +174,4 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
-  
+    
